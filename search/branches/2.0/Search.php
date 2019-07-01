@@ -3,6 +3,10 @@
 namespace tiFy\Plugins\Search;
 
 use Psr\Container\ContainerInterface as Container;
+use tiFy\Plugins\Search\{Contracts\Search as SearchContract,
+    Contracts\SearchAutocomplete as SearchAutocompleteContract,
+    Field\SearchAutocomplete};
+use tiFy\Support\Proxy\Field;
 
 /**
  * Class Search
@@ -36,7 +40,7 @@ use Psr\Container\ContainerInterface as Container;
  * Dans le dossier de config, créer le fichier search.php
  * @see Resources/config/search.php
  */
-class Search
+class Search implements SearchContract
 {
     /**
      * Instance du conteneur d'injection de dépendances.
@@ -51,8 +55,24 @@ class Search
      *
      * @return void
      */
-    public function __construct(?Container $container)
+    public function __construct(?Container $container = null)
     {
         $this->container = $container;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getContainer(): ?Container
+    {
+        return $this->container;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function initialize(): SearchContract
+    {
+        return $this;
     }
 }
