@@ -3,10 +3,9 @@
 namespace tiFy\Plugins\Search;
 
 use Psr\Container\ContainerInterface as Container;
-use tiFy\Plugins\Search\{Contracts\Search as SearchContract,
-    Contracts\SearchAutocomplete as SearchAutocompleteContract,
-    Field\SearchAutocomplete};
-use tiFy\Support\Proxy\Field;
+use tiFy\Plugins\Search\{
+    Contracts\Search as SearchContract
+};
 
 /**
  * Class Search
