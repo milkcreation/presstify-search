@@ -7,11 +7,20 @@ use Psr\Container\ContainerInterface as Container;
 interface Search
 {
     /**
-     * Initialisation
+     * Initialisation.
      *
      * @return static
      */
-    public function initialize(): Search;
+    public function build(): Search;
+
+    /**
+     * Récupération d'une instance de pilote de recherche.
+     *
+     * @param string $name
+     *
+     * @return Searcher|null
+     */
+    public function get(string $name): ?Searcher;
 
     /**
      * Récupération du conteneur d'injection de dépendances.
@@ -19,4 +28,14 @@ interface Search
      * @return Container|null
      */
     public function getContainer(): ?Container;
+
+    /**
+     * Déclaration d'un pilote de recherche.
+     *
+     * @param string $name
+     * @param Searcher|array|null $attrs
+     *
+     * @return Searcher
+     */
+    public function register(string $name, $attrs = null): Searcher;
 }

@@ -8,7 +8,7 @@
     "search"
   ],
   "homepage": "https://svn.tigreblanc.fr/presstify-plugins/search",
-  "time": "2019-10-25",
+  "time": "2020-04-14",
   "license": "proprietary",
   "authors": [
     {
@@ -20,7 +20,7 @@
   "repositories": [
     {
       "type": "composer",
-      "url": "http://composer.tigreblanc.fr/presstify/"
+      "url": "https://composer.tigreblanc.fr/presstify/"
     }
   ],
   "require": {

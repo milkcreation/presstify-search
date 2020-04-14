@@ -3,13 +3,9 @@
 namespace tiFy\Plugins\Search;
 
 use Psr\Container\ContainerInterface as Container;
-use tiFy\Plugins\Search\{
-    Contracts\Search as SearchContract
-};
+use tiFy\Plugins\Search\Contracts\{Search as SearchContract, Searcher as SearcherContract};
 
 /**
- * Class Search
- *
  * @desc Extension PresstiFy de recherche avancée.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Search
@@ -42,10 +38,22 @@ use tiFy\Plugins\Search\{
 class Search implements SearchContract
 {
     /**
+     * Indicateur d'initialisation.
+     * @var bool
+     */
+    protected $built = false;
+
+    /**
      * Instance du conteneur d'injection de dépendances.
      * @var Container|null
      */
     protected $container;
+
+    /**
+     * Liste des instances des pilotes de recherche.
+     * @var SearcherContract[]|array
+     */
+    protected $searcher = [];
 
     /**
      * CONSTRUCTEUR.
@@ -62,6 +70,30 @@ class Search implements SearchContract
     /**
      * @inheritDoc
      */
+    public function build(): SearchContract
+    {
+        if (!$this->built) {
+            foreach (config('search', []) as $name => $params) {
+                $this->register($name, $params);
+            }
+
+            $this->built = true;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function get(string $name): ?SearcherContract
+    {
+        return $this->searcher[$name] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getContainer(): ?Container
     {
         return $this->container;
@@ -70,8 +102,10 @@ class Search implements SearchContract
     /**
      * @inheritDoc
      */
-    public function initialize(): SearchContract
+    public function register(string $name, $attrs = null): SearcherContract
     {
-        return $this;
+        $searcher = $attrs instanceof SearcherContract ? $attrs : (new Searcher())->setParams($attrs ?: []);
+
+        return $this->searcher[$name] = $searcher->setName($name)->setManager($this);
     }
 }
