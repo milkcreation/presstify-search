@@ -240,7 +240,7 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
             $wp_query->parse_query();
 
             foreach((array) $attrs['allow_override'] as $key) {
-                if ($value = Request::input($key)) {
+                if ($value = Request::input("_{$key}")) {
                     $attrs[$key] = $value;
                 }
             }
@@ -459,22 +459,33 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
         global $wpdb;
 
         $where = "";
-        $post_type = (isset($q['post_type'])) ? $q['post_type'] : 'any';
+        $post_type = isset($q['post_type']) ? $q['post_type'] : 'any';
+        $allowed = $this->params('post_type', null, $group);
+        $in_search_post_types = get_post_types(['exclude_from_search' => false]);
 
-        if ($post_type === $wp_query->get('post_type')) {
-            return $where;
+        if (empty($post_type) || ($post_type === 'any')) {
+            $post_type = $in_search_post_types;
         }
 
-        if ('any' == $post_type) {
-            $in_search_post_types = get_post_types(['exclude_from_search' => false]);
+        if ($allowed === 'any') {
+            $allowed = $in_search_post_types;
+        }
 
-            if (empty($in_search_post_types)) {
-                $where .= " AND 1=0 ";
-            } else {
-                $where .= " AND {$wpdb->posts}.post_type IN" .
-                    " ('" . join("', '", array_map('esc_sql', $in_search_post_types)) . "')";
+        if (is_string($post_type)) {
+            $post_type = Arr::wrap(array_map('trim', explode(',', $post_type)));
+        }
+
+        if (empty($post_type) || empty($allowed)) {
+            return $where = " AND 1=0 ";
+        } else {
+            foreach($post_type as $pt) {
+                if (!in_array($pt, $allowed)) {
+                    return $where = " AND 1=0 ";
+                }
             }
-        } elseif (!empty($post_type) && is_array($post_type)) {
+        }
+
+        if (is_array($post_type)) {
             $where .= " AND {$wpdb->posts}.post_type IN ('" . join("', '", esc_sql($post_type)) . "')";
         } else {
             $where .= $wpdb->prepare(" AND {$wpdb->posts}.post_type = %s", $post_type);

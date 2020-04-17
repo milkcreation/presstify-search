@@ -28,13 +28,9 @@ class WpSearch extends BaseSearch implements WordpressContract
                     'show_in_menu'      => true,
                     'show_admin_column' => true,
                 ]);
-
-                foreach ($this->searcher as $name => $searcher) {
-                    $searcher->build();
-                }
             });
 
-            add_action('init', function () {
+            add_action('wp_loaded', function () {
                 foreach ($this->searcher as $name => $searcher) {
                     $searcher->build();
                 }
