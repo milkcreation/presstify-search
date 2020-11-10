@@ -293,18 +293,18 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
         if (!empty($q['sentence'])) {
             $q['search_terms'] = [$q['s']];
         } else {
-            /*if (preg_match_all('/".*?("|$)|((?<=[\t ",+])|^)[^\t ",+]+/', $q['s'], $matches)) {
+            if ( preg_match_all( '/".*?("|$)|((?<=[\t ",+])|^)[^\t ",+]+/', $q['s'], $matches ) ) {
                 $q['search_terms_count'] = count($matches[0]);
-                $q['search_terms'] = $this->parseSearchTerms($matches[0]);
-
-                // if the search string has only short terms or stopwords, or is 10+ terms long, match it as sentence
-                if (empty($q['search_terms']) || count($q['search_terms']) > 9) {
+                $q['search_terms']       = $this->parseSearchTerms($matches[0]);
+                if (empty( $q['search_terms'] ) || count( $q['search_terms'] ) > 9 ) {
                     $q['search_terms'] = [$q['s']];
                 }
-            } else {*/
-            $q['search_terms'] = [$q['s']];
-            //}
+            } else {
+                $q['search_terms'] = [$q['s']];
+            }
         }
+
+        //$q['search_terms'] = [$q['s']];
 
         $n = !empty($q['exact']) ? '' : '%';
         $searchand = '';
@@ -347,6 +347,7 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
                 }
             }
 
+            /* */
             if ($metas = $q['searcher_metas']) {
                 if (is_bool($metas)) {
                     $this->metas[$group][] = [];
@@ -359,7 +360,9 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
                     $search_parts_args[] = $like;
                 }
             }
+            /**/
 
+            /* */
             if ($tags = $q['searcher_tags']) {
                 if (is_bool($tags)) {
                     $this->tags[$group][] = 'search_tag';
@@ -372,22 +375,21 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
                     $search_parts_args[] = $like;
                 }
             }
+            /**/
 
             if ($search_parts) {
                 $_search_parts = implode(" {$andor_op} ", $search_parts);
                 array_unshift($search_parts_args, $_search_parts);
-                $search .= call_user_func_array([$wpdb, 'prepare'], $search_parts_args);
-            }
 
-            if ($search) {
-                $search = "{$searchand}({$search})";
-            }
+                $wrapper = !empty($search) ? " AND (%s)" : '%s';
+                $wrapper = sprintf($wrapper, (count($search_parts) > 1) ? '(%s)' : '%s');
 
-            $searchand = ' AND ';
+                $search .= sprintf($wrapper, call_user_func_array([$wpdb, 'prepare'], $search_parts_args));
+            }
         }
 
         if (!empty($search)) {
-            $search = " AND ({$search})";
+            $search = " AND {$search}";
 
             if ($search_post_types = $this->parseSearchPostTypes($q, $group, $wp_query)) {
                 $search .= $search_post_types;
@@ -469,6 +471,8 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
 
         if ($allowed === 'any') {
             $allowed = $in_search_post_types;
+        } elseif (is_string($allowed)) {
+            $allowed = [$allowed];
         }
 
         if (is_string($post_type)) {
@@ -478,6 +482,8 @@ class WpSearcher extends BaseSearcher implements WpSearcherContract
         if (empty($post_type) || empty($allowed)) {
             return $where = " AND 1=0 ";
         } else {
+
+
             foreach($post_type as $pt) {
                 if (!in_array($pt, $allowed)) {
                     return $where = " AND 1=0 ";

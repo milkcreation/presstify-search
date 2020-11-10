@@ -9,7 +9,7 @@ use tiFy\Plugins\Search\Contracts\{Search as SearchContract, Searcher as Searche
  * @desc Extension PresstiFy de recherche avancée.
  * @author Jordy Manner <jordy@milkcreation.fr>
  * @package tiFy\Plugins\Search
- * @version 2.0.3
+ * @version 2.0.4
  *
  * USAGE :
  * Activation
